@@ -1,0 +1,31 @@
+//"Dni_SN.scx","liczba dni S+N",1.0.0,SYSTEM
+
+long iEv, iDzien
+Date dtOd
+Date dtDo
+Date dt
+EventInstance ei
+EventMgr mgr
+InfoDni dni
+TimePeriod tp
+int acZdarzWDniu(31)
+
+OkresKadrowy(dtOd, dtDo)
+mgr.AddEventDef(1)
+mgr.LoadEvents(dtOd, dtDo, 0, 1, 0, 0)
+
+// Oznaczamy dni wolne, w których wystêpuj¹ nadgodziny.
+for iEv = 1 to iEv > mgr.GetCount()
+  mgr.GetAt(ei, iEv)
+  mgr.NumberOfDays(dni, ei.DataOd, ei.DataDo, 0)
+  //InfoMessage((using "%l %s %l", iEv, ei.DataOd.ToStr(), dni.Robocze))
+  if dni.Robocze == 0 then
+	acZdarzWDniu(ei.DataOd.Day) += 1
+  endif
+next iEv
+
+// Zliczamy oznaczone wczeœniej dni. Dziêki temu
+// nie boimy siê, ¿e w jakimœ dniu zdarzenie nadgodziny wystêpuje 2 razy.
+for iDzien = 1 to iDzien > Size(acZdarzWDniu)
+  if acZdarzWDniu(iDzien) > 0 then result += 1
+next iDzien
