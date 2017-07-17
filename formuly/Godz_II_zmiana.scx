@@ -1,0 +1,50 @@
+//"Godz_II_zmiana.scx","liczba godzin II zmiany",1.0.0,SYSTEM
+
+Date dtOkrOd
+Date dtOkrDo
+Date dt
+InfoPlanPracy plan
+WorkMgr wmgr
+EventInstance ei
+EventMgr emgr
+long isch, iEv
+long nMinutaOd, nMinutaDo
+long nGodzPopOd = 16
+long nGodzPopDo = 22
+
+OkresKadrowy(dtOkrOd, dtOkrDo)
+
+int sub DodajGodziny(long nMinutaOd, long nMinutaDo)
+  while nMinutaDo < nMinutaOd
+    nMinutaDo += 24*60
+  wend
+  if nMinutaOd < nGodzPopOd*60 then nMinutaOd = nGodzPopOd*60
+  if nMinutaDo > nGodzPopDo*60 then nMinutaDo = nGodzPopDo*60
+  if nMinutaDo > nMinutaOd then
+    result += (nMinutaDo - nMinutaOd) / 60.0
+  endif
+endsub
+
+// Zbieramy z godzin pracy (kalendarz).
+dt = dtOkrOd
+while dt.Is_LE(dtOkrDo)
+  wmgr.LoadSchedule(dt)
+  for isch = 1 to isch > wmgr.GetWorkCount()
+    wmgr.GetWork(plan, isch)
+    nMinutaOd = plan.GodzinaOd * 60 + plan.MinutaOd
+    nMinutaDo = plan.GodzinaDo * 60 + plan.MinutaDo
+    DodajGodziny(nMinutaOd, nMinutaDo)
+  next isch
+  dt.AddDays(1)
+wend
+
+
+// Zbieramy ze zdarzeñ (nadgodziny)
+emgr.AddEventDef(1)
+emgr.LoadEvents(dtOkrOd, dtOkrDo, 0, 1, 0, 0)
+for iEv = 1 to iEv > emgr.GetCount()
+  emgr.GetAt(ei, iEv)
+  nMinutaOd = ei.GodzinaOd * 60 + ei.MinutaOd
+  nMinutaDo = ei.GodzinaDo * 60 + ei.MinutaDo
+  DodajGodziny(nMinutaOd, nMinutaDo)
+next iEv
